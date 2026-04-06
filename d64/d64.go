@@ -9,6 +9,7 @@ package d64
 import (
 	"fmt"
 	"io"
+	"os"
 )
 
 const (
@@ -51,7 +52,15 @@ func sectorOffset(track, sector int) int {
 
 // Opened D64 disk image.
 type Disk struct {
-	data []byte
+	Verbose bool
+	data    []byte
+}
+
+// warn prints a message to stderr when Verbose is enabled.
+func (d *Disk) warn(format string, args ...any) {
+	if d.Verbose {
+		fmt.Fprintf(os.Stderr, "d64: "+format+"\n", args...)
+	}
 }
 
 // Read an entire D64 image.

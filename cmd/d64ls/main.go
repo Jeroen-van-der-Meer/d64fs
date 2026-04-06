@@ -1,10 +1,11 @@
 // List the directory of a Commodore 64 D64 disk image.
 //
-// Usage: d64ls <image.d64>
+// Usage: d64ls [-v] <image.d64>
 
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -12,12 +13,19 @@ import (
 )
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "Usage: %s <image.d64>\n", os.Args[0])
+	verbose := flag.Bool("v", false, "Verbose logging")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [-v] <image.d64>\n", os.Args[0])
+		flag.PrintDefaults()
+	}
+	flag.Parse()
+
+	if flag.NArg() != 1 {
+		flag.Usage()
 		os.Exit(1)
 	}
 
-	f, err := os.Open(os.Args[1])
+	f, err := os.Open(flag.Arg(0))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
@@ -29,6 +37,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
+	disk.Verbose = *verbose
 
 	bam, err := disk.BAM()
 	if err != nil {

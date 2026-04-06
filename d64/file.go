@@ -1,9 +1,5 @@
 package d64
 
-import (
-	"fmt"
-)
-
 // Read the full contents of a file by following its sector chain.
 func (d *Disk) ReadFile(entry DirEntry) ([]byte, error) {
 	if entry.StartTrack == 0 {
@@ -14,16 +10,19 @@ func (d *Disk) ReadFile(entry DirEntry) ([]byte, error) {
 	visited := make(map[[2]int]bool)
 
 	track, sector := entry.StartTrack, entry.StartSector
+	sectors := 0
 
 	for i := 0; i < SectorCount; i++ {
 		key := [2]int{track, sector}
 		if visited[key] {
-			return nil, fmt.Errorf(
-				"Cycle detected in sector chain at (%d, %d)", track, sector)
+			d.warn("%s: cycle in sector chain at (%d, %d), truncating after %d sectors",
+				entry.Filename, track, sector, sectors)
+			break
 		}
 		visited[key] = true
 
 		raw := d.ReadSector(track, sector)
+		sectors++
 
 		nextTrack := int(raw[0])
 		nextSector := int(raw[1])
@@ -37,6 +36,11 @@ func (d *Disk) ReadFile(entry DirEntry) ([]byte, error) {
 			data = append(data, raw[2:nextSector]...)
 			break
 		}
+	}
+
+	if sectors != entry.SizeInSectors {
+		d.warn("%s: sector count mismatch (directory says %d, chain has %d)",
+			entry.Filename, entry.SizeInSectors, sectors)
 	}
 
 	return data, nil
