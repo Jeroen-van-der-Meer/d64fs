@@ -1,4 +1,4 @@
-package d64
+package cbm
 
 // PETSCII (PET Standard Code of Information Interchange) is Commodore's
 // character encoding. We map each PETSCII byte to a Unicode character. Control
@@ -58,9 +58,8 @@ var petsciiTable = [256]rune{
 	'🮃', '▃', '🭿', '▖', '▝', '┘', '▘', 'π',
 }
 
-// Convert a PETSCII byte slice to a UTF-8 string.
+// DecodePETSCII converts a PETSCII byte slice to a UTF-8 string.
 func DecodePETSCII(b []byte) string {
-	//b = bytes.TrimRight(b, "\xa0 ")
 	runes := make([]rune, len(b))
 	for i, c := range b {
 		runes[i] = petsciiTable[c]

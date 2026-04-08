@@ -1,3 +1,3 @@
-module d64
+module cbm
 
 go 1.26.1
